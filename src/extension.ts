@@ -10,6 +10,24 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('dictionaryView', provider)
   );
+  // register context menu command to lookup selected word
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dictionary.lookupSelection', () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+      const word = editor.document.getText(editor.selection).trim();
+      if (!word) {
+        vscode.window.showInformationMessage('No text selected for lookup');
+        return;
+      }
+      // ensure the dictionary view is visible
+      vscode.commands.executeCommand('workbench.view.explorer');
+      // perform lookup
+      provider.lookupWord(word);
+    })
+  );
 }
 
 export function deactivate() {}
@@ -49,7 +67,7 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline';"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dictionary</title></head><body><div id="root"></div><script src="${scriptUri}" nonce="${webview.cspSource}"></script></body></html>`;
   }
 
-  private lookupWord(word: string) {
+  lookupWord(word: string) {
     if (!this._view) {
       return;
     }
@@ -64,7 +82,9 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
       console.log('lookupWord callback stdout:', stdout);
       console.log('lookupWord callback stderr:', stderr);
       if (err) {
-        webview.postMessage({ type: 'error', error: stderr || err.message });
+        // use stderr or stdout (which contains suggestion messages) or err.message
+        const message = stderr || stdout || err.message;
+        webview.postMessage({ type: 'error', error: message });
         return;
       }
       try {

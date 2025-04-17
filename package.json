@@ -12,9 +12,25 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "*",
-    "onView:dictionaryView"
+    "onView:dictionaryView",
+    "onCommand:dictionary.lookupSelection"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "dictionary.lookupSelection",
+        "title": "Lookup Selection in Dictionary"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "dictionary.lookupSelection",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
+      ]
+    },
     "views": {
       "explorer": [
         {

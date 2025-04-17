@@ -20,6 +20,7 @@ interface Results {
   definitions: string[];
   synonyms: string[];
   antonyms: string[];
+  hyponyms: string[];
   examples: string[];
 }
 
@@ -60,8 +61,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="p-4 font-sans text-gray-800">
-      <form onSubmit={onSubmit} className="flex">
+    <div className="p-4 font-sans">
+      <form onSubmit={onSubmit} className="flex text-black">
         <input
           type="text"
           value={word}
@@ -84,10 +85,11 @@ const App: React.FC = () => {
       )}
 
       {results && (
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6 text-white">
           <Section title="Definitions" items={results.definitions} />
           <Section title="Synonyms" items={results.synonyms} />
           <Section title="Antonyms" items={results.antonyms} />
+          <Section title="Hyponyms" items={results.hyponyms} />
           <Section title="Examples" items={results.examples} />
         </div>
       )}

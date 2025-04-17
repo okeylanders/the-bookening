@@ -27,7 +27,7 @@ module.exports = [
       libraryTarget: 'commonjs2'
     },
     plugins: [
-      new CopyPlugin({ patterns: [ { from: 'scripts', to: 'dist/scripts' } ] })
+      new CopyPlugin({ patterns: [ { from: 'scripts', to: 'scripts' } ] })
     ]
   },
   {
