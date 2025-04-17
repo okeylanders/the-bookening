@@ -1,0 +1,13 @@
+# Ignore VS Code specific settings and metadata
+.vscode/
+# Ignore node dependencies
+node_modules/
+# Ignore TypeScript source files and maps
+**/*.ts
+**/*.tsx
+**/*.map
+# Build config and config files not needed at runtime
+tsconfig.json
+webpack.config.js
+tailwind.config.js
+postcss.config.js

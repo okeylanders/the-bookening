@@ -1,0 +1,57 @@
+{
+  "name": "dictionary",
+  "displayName": "Dictionary",
+  "description": "Lookup definitions, synonyms, antonyms, and example sentences via NLTK WordNet",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "*",
+    "onView:dictionaryView"
+  ],
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "dictionaryView",
+          "name": "Dictionary",
+          "icon": "icon.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "webpack --mode production",
+    "watch": "webpack --watch --mode development",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/vscode": "^1.50.0",
+    "autoprefixer": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^5.0.0",
+    "postcss": "^8.0.0",
+    "postcss-loader": "^4.0.0",
+    "style-loader": "^2.0.0",
+    "tailwindcss": "^2.0.0",
+    "ts-loader": "^8.0.0",
+    "typescript": "^4.0.0",
+    "vscode": "^1.1.37",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0"
+  },
+  "dependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  }
+}
