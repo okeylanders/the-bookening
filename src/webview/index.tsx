@@ -2,7 +2,7 @@ import React, { useState, useEffect, FormEvent, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const debugging = true;
+const debugging = false;
 
 declare const acquireVsCodeApi: () => {
   postMessage: (message: any) => void;

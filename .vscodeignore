@@ -6,6 +6,7 @@ node_modules/
 **/*.ts
 **/*.tsx
 **/*.map
+**/*.psd
 # Build config and config files not needed at runtime
 tsconfig.json
 webpack.config.js

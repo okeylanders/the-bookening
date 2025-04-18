@@ -1,8 +1,9 @@
 {
   "name": "the-bookening",
-  "displayName": "The Bookening: Dictionary & Thesauarus",
+  "displayName": "The Bookening: Dictionary & Thesaurus",
   "description": "Lookup definitions, synonyms, antonyms, hyponyms and example sentences via NLTK WordNet. More Features Coming Soon!",
-  "version": "1.0.0",
+  "version": "1.0.3",
+  "icon": "assets/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/okeylanders/the-bookening"
@@ -14,18 +15,18 @@
   "license": "MIT",
   "publisher": "OkeyLanders",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "extensionKind": [
 		"ui",
 		"workspace"
 	],
   "categories": [
+    "Education",
     "Other"
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:theBookening.dictionaryView"
   ],
   "contributes": {
     "commands": [

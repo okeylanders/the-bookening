@@ -3,11 +3,11 @@ import { execFile, spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
-const debugging = true;
+const debugging = false;
 
 export function activate(context: vscode.ExtensionContext) {
   const provider = new DictionaryViewProvider(context.extensionUri);
-  
+  debugging && console.log('The Bookening: Activating Exstension', context.extensionUri.fsPath);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       DictionaryViewProvider.viewType,
@@ -52,6 +52,8 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
 		_token: vscode.CancellationToken,
   ) {
     
+    debugging && console.log('The Bookening: Resolving Dictionary View');
+
     this._view = webviewView;
 
     // Allow scripts in the webview
@@ -64,6 +66,8 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
 		};
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+
+    debugging && console.log('The Bookening: Dictionary View HTML set');
 
     webviewView.webview.onDidReceiveMessage(async message => {
       debugging && console.log('Extension received message:', message);
@@ -84,6 +88,8 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
   }
 
   private async checkPythonAvailability(): Promise<void> {
+    debugging && console.log('The Bookening: Checking Python availability');
+
     if (!this._view) return;
     const webview = this._view.webview;
 
@@ -99,7 +105,7 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
           }
         });
       });
-      debugging && console.log('Python 3 check successful.');
+      debugging && console.log('The Bookening: Python 3 check successful.');
     } catch (err) {
       try {
         await new Promise<void>((resolve, reject) => {
@@ -127,12 +133,13 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
   }
 
   private installDependencies(): void {
+    debugging && console.log('The Bookening: Install Dependencies called');
     if (!this._view || !this._pythonPath) {
       this._view?.webview.postMessage({ type: 'install_status', status: 'error', message: 'Python path not configured or view not available.' });
       return;
     }
     const webview = this._view.webview;
-    const requirementsPath = path.join(this.extensionUri.fsPath, 'dist', 'scripts', 'requirements.txt');
+    const requirementsPath = path.join(this.extensionUri.fsPath, 'scripts', 'requirements.txt');
 
     if (!fs.existsSync(requirementsPath)) {
       debugging && console.error('requirements.txt not found at:', requirementsPath);
@@ -227,7 +234,7 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
     }
     
     debugging && console.log(`lookupWord called with: ${word}`);
-    const scriptPath = path.join(this.extensionUri.fsPath, 'dist', 'scripts', 'lookup.py');
+    const scriptPath = path.join(this.extensionUri.fsPath, 'scripts', 'lookup.py');
     debugging && console.log(`Executing python script at: ${scriptPath} using ${this._pythonPath}`);
 
     execFile(this._pythonPath, [scriptPath, '--word', word], { encoding: 'utf8' }, (err, stdout, stderr) => {
