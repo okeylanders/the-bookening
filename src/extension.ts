@@ -29,6 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
       }
       // ensure the dictionary view is visible
       vscode.commands.executeCommand('workbench.view.extension.dictionary');
+      // notify the view to update its state
+      provider.notifyWebviewOfWordLookup(word);
       // perform lookup
       provider.lookupWord(word);
     })
@@ -82,10 +84,20 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline';"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dictionary</title></head><body><div id="root"></div><script src="${scriptUri}" nonce="${webview.cspSource}"></script></body></html>`;
   }
 
+  notifyWebviewOfWordLookup(word: string) {
+    if (!this._view) {
+      return;
+    }
+    const webview = this._view.webview;
+    debugging && console.log(`notifyWebviewOfWordLookup called with: ${word}`);
+    webview.postMessage({ type: 'word', word: word});
+  }
+
   lookupWord(word: string) {
     if (!this._view) {
       return;
     }
+    
     const webview = this._view.webview;
     debugging && console.log(`lookupWord called with: ${word}`);
     const python = 'python3';
@@ -99,14 +111,14 @@ class DictionaryViewProvider implements vscode.WebviewViewProvider {
       if (err) {
         // use stderr or stdout (which contains suggestion messages) or err.message
         const message = stderr || stdout || err.message;
-        webview.postMessage({ type: 'error', error: message });
+        webview.postMessage({ type: 'error', word: word, error: message });
         return;
       }
       try {
         const data = JSON.parse(stdout);
-        webview.postMessage({ type: 'results', data });
+        webview.postMessage({ type: 'results', word: word, data });
       } catch (e: any) {
-        webview.postMessage({ type: 'error', error: e.message });
+        webview.postMessage({ type: 'error', word: word, error: e.message });
       }
     });
   }

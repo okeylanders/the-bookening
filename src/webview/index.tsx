@@ -68,9 +68,14 @@ const App: React.FC = () => {
         setResults(msg.data);
         setError(null);
       }
-      if (msg.type === 'error') {
+      else if (msg.type === 'error') {
         setError(msg.error);
         setResults(null);
+      }
+      else if (msg.type === 'word') {
+        setLoading(true);
+        setResults(null);
+        setWord(msg.word);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -106,8 +111,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="p-0 font-sans">
-      <form onSubmit={onSubmit} className="flex text-black p-0 w-full">
+    // Use flex column layout for the whole app, make it fill the viewport height
+    <div className="p-0 font-sans flex flex-col h-screen">
+      {/* Search form remains at the top */}
+      <form onSubmit={onSubmit} className="flex text-black p-0 w-full flex-shrink-0">
         <input
           type="text"
           value={word}
@@ -123,21 +130,33 @@ const App: React.FC = () => {
         </button>
       </form>
 
-      {error && (
-        <div className="mt-4 text-red-600">
-          Error: {error}
-        </div>
-      )}
+      {/* Container for content below the search bar, takes remaining space */}
+      <div className="flex-grow relative overflow-y-auto"> {/* Added relative positioning and overflow */}
+        {/* Loading indicator: positioned absolutely to cover this container */}
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-10" style={{ backgroundColor: 'var(--vscode-editor-background)' }}> {/* Use theme background */}
+            <p style={{ color: 'var(--vscode-editor-foreground)' }}>Loading...</p> {/* Use theme foreground */}
+          </div>
+        )}
 
-      {results && (
-        <div className="p-4 mt-6 space-y-6">
-          <Section title="Definitions" items={results.definitions} />
-          <Section title="Synonyms" items={results.synonyms} onWordClick={handleWordClick} />
-          <Section title="Antonyms" items={results.antonyms} onWordClick={handleWordClick} />
-          <Section title="Hyponyms" items={results.hyponyms} onWordClick={handleWordClick} />
-          <Section title="Examples" items={results.examples} />
-        </div>
-      )}
+        {/* Error display */}
+        {error && (
+          <div className="p-4 text-red-600"> {/* Added padding */}
+            Error: {error}
+          </div>
+        )}
+
+        {/* Results display: Only rendered when not loading and results exist */}
+        {!loading && results && (
+          <div className="p-4 space-y-6"> {/* Removed mt-6, padding handled by parent */}
+            <Section title="Definitions" items={results.definitions} />
+            <Section title="Synonyms" items={results.synonyms} onWordClick={handleWordClick} />
+            <Section title="Antonyms" items={results.antonyms} onWordClick={handleWordClick} />
+            <Section title="Hyponyms" items={results.hyponyms} onWordClick={handleWordClick} />
+            <Section title="Examples" items={results.examples} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
