@@ -3,6 +3,14 @@
   "displayName": "The Bookening: Dictionary & Thesauarus",
   "description": "Lookup definitions, synonyms, antonyms, hyponyms and example sentences via NLTK WordNet. More Features Coming Soon!",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/okeylanders/the-bookening"
+  },
+  "bugs": {
+    "url": "https://github.com/okeylanders/the-bookening/issues"
+  },
+  "homepage": "https://github.com/okeylanders/the-bookening#readme",
   "engines": {
     "vscode": "^1.74.0"
   },
