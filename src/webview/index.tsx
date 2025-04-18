@@ -25,39 +25,73 @@ interface Results {
 }
 
 const App: React.FC = () => {
-  const [word, setWord] = useState('');
-  const [results, setResults] = useState<Results | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Initialize state from vscode.getState() or defaults
+  const [word, setWord] = useState(() => {
+    try {
+      return vscode.getState()?.word || '';
+    } catch {
+      return '';
+    }
+  });
+  const [results, setResults] = useState<Results | null>(() => {
+    try {
+      return vscode.getState()?.results || null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false); // Typically don't persist loading state
+  const [error, setError] = useState<string | null>(() => {
+    try {
+      return vscode.getState()?.error || null;
+    } catch {
+      return null;
+    }
+  });
 
+  // Effect to save state whenever relevant variables change
+  useEffect(() => {
+    try {
+      console.log('Saving state:', { word, results, error });
+      vscode.setState({ word, results, error });
+      // Note: We generally don't save 'loading' state
+    } catch (e) {
+      console.error('Failed to set state in VS Code', e);
+    }
+  }, [word, results, error]); // Dependency array ensures this runs when state changes
+
+  // Effect to handle messages from the extension
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       console.log('Webview received message:', event.data);
       const msg = event.data;
+      setLoading(false); // Always stop loading when a response arrives
       if (msg.type === 'results') {
         setResults(msg.data);
-        setLoading(false);
-        setError(null);
+        setError(null); // Clear previous error on success
       }
       if (msg.type === 'error') {
         setError(msg.error);
-        setLoading(false);
+        setResults(null); // Clear previous results on error
       }
+      // State saving is handled by the other useEffect
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, []); // Empty dependency array: runs only once on mount
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!word.trim()) {
+    const trimmedWord = word.trim();
+    if (!trimmedWord) {
       return;
     }
-    console.log('Webview sending lookup message:', word.trim());
+    console.log('Webview sending lookup message:', trimmedWord);
     setLoading(true);
+    // Clear previous results/error immediately for better UX
     setResults(null);
     setError(null);
-    vscode.postMessage({ type: 'lookup', word: word.trim() });
+    vscode.postMessage({ type: 'lookup', word: trimmedWord });
   };
 
   return (
@@ -66,7 +100,7 @@ const App: React.FC = () => {
         <input
           type="text"
           value={word}
-          onChange={e => setWord(e.target.value)}
+          onChange={(e) => setWord(e.target.value)} // Directly update state
           placeholder="Enter a word..."
           className="flex-grow p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />

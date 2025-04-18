@@ -3,14 +3,17 @@ import { execFile } from 'child_process';
 import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Activating DictionaryViewProvider');
   const provider = new DictionaryViewProvider(context.extensionUri);
-  console.log("context.extensionUri:", context.extensionUri);
-  console.log('Registering webview view provider for dictionaryView');
+  
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('dictionaryView', provider)
+    // Register the view provider with options correctly nested
+    vscode.window.registerWebviewViewProvider(
+      'dictionary.dictionaryView',
+      provider
+    )
   );
   // register context menu command to lookup selected word
+  
   context.subscriptions.push(
     vscode.commands.registerCommand('dictionary.lookupSelection', () => {
       const editor = vscode.window.activeTextEditor;
@@ -23,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       // ensure the dictionary view is visible
-      vscode.commands.executeCommand('workbench.view.explorer');
+      vscode.commands.executeCommand('workbench.view.extension.dictionary');
       // perform lookup
       provider.lookupWord(word);
     })
@@ -33,21 +36,31 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 class DictionaryViewProvider implements vscode.WebviewViewProvider {
+
+  public static readonly viewType = 'dictionary.dictionaryView';
+  
   private _view?: vscode.WebviewView;
 
   constructor(private readonly extensionUri: vscode.Uri) {
-    console.log('DictionaryViewProvider constructor called');
   }
 
-  resolveWebviewView(webviewView: vscode.WebviewView) {
-    console.log('resolveWebviewView called');
+  resolveWebviewView(webviewView: vscode.WebviewView,
+    _context: vscode.WebviewViewResolveContext,
+		_token: vscode.CancellationToken,
+  ) {
+    
     this._view = webviewView;
+
     webviewView.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.file(path.join(this.extensionUri.fsPath, 'dist'))
-      ]
-    };
+			// Allow scripts in the webview
+			enableScripts: true,
+
+			localResourceRoots: [
+				this.extensionUri
+			]
+		};
+
+    // Options are now set during registration, no need to set them here
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(message => {

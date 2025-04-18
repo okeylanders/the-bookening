@@ -4,17 +4,17 @@
   "description": "Lookup definitions, synonyms, antonyms, and example sentences via NLTK WordNet",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.74.0"
   },
+  "extensionKind": [
+		"ui",
+		"workspace"
+	],
   "categories": [
     "Other"
   ],
   "main": "./dist/extension.js",
-  "activationEvents": [
-    "*",
-    "onView:dictionaryView",
-    "onCommand:dictionary.lookupSelection"
-  ],
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
@@ -31,13 +31,23 @@
         }
       ]
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dictionary",
+          "title": "Dictionary",
+          "icon": "icon.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "dictionary": [
         {
           "type": "webview",
-          "id": "dictionaryView",
+          "id": "dictionary.dictionaryView",
           "name": "Dictionary",
-          "icon": "icon.svg"
+          "icon": "icon.svg",
+          "preserveContextWhenHidden": true
         }
       ]
     }
@@ -52,7 +62,7 @@
     "@types/node": "^14.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "@types/vscode": "^1.50.0",
+    "@types/vscode": "^1.59.0",
     "autoprefixer": "^10.0.0",
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^5.0.0",

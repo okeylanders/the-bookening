@@ -15,14 +15,16 @@ try:
 except ImportError:
     # install into the same Python where this script is running
     req = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-    subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', req], check=True)
-    from tabulate import tabulate
+    subprocess.run([
+        sys.executable, '-m', 'pip', 'install', '-r', req
+    ], check=True, stdout=sys.stderr, stderr=sys.stderr)
+    os.execv(sys.executable, [sys.executable] + sys.argv)
 
 def ensure_wordnet():
     try:
         data.find('corpora/wordnet')
     except LookupError:
-        nltk.download('wordnet', quiet=True)
+        nltk.download('wordnet', quiet=True, raise_on_error=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Lookup definitions, synonyms, antonyms, hyponyms, and example sentences for a word.")
