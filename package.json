@@ -1,8 +1,8 @@
 {
-  "name": "dictionary",
-  "displayName": "Dictionary",
-  "description": "Lookup definitions, synonyms, antonyms, and example sentences via NLTK WordNet",
-  "version": "0.0.2",
+  "name": "the-bookening",
+  "displayName": "The Bookening: Dictionary & Thesauarus",
+  "description": "Lookup definitions, synonyms, antonyms, hyponyms and example sentences via NLTK WordNet. More Features Coming Soon!",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -15,19 +15,19 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:dictionary.dictionaryView"
+    "onView:theBookening.dictionaryView"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "dictionary.lookupSelection",
+        "command": "theBookening.dictionary.lookupSelection",
         "title": "Lookup Selection in Dictionary"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "dictionary.lookupSelection",
+          "command": "theBookening.dictionary.lookupSelection",
           "when": "editorHasSelection",
           "group": "navigation"
         }
@@ -36,19 +36,19 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "dictionary",
-          "title": "Dictionary",
-          "icon": "icon.svg"
+          "id": "theBookening",
+          "title": "The Bookening: Dictionary",
+          "icon": "assets/icon.svg"
         }
       ]
     },
     "views": {
-      "dictionary": [
+      "theBookening": [
         {
           "type": "webview",
-          "id": "dictionary.dictionaryView",
+          "id": "theBookening.dictionaryView",
           "name": "Dictionary",
-          "icon": "icon.svg",
+          "icon": "assets/icon.svg",
           "preserveContextWhenHidden": true
         }
       ]

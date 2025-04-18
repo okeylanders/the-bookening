@@ -29,8 +29,7 @@ module.exports = [
     plugins: [
       new CopyPlugin({ 
         patterns: [ 
-          { from: 'scripts', to: 'scripts' },
-          { from: 'pkg', to: 'pkg' }
+          { from: 'scripts', to: 'scripts' }
         ]
       })
     ], 

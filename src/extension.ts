@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   
   context.subscriptions.push(
-    vscode.commands.registerCommand('dictionary.lookupSelection', () => {
+    vscode.commands.registerCommand('theBookening.dictionary.lookupSelection', () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         return;
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('No text selected for lookup');
         return;
       }
-      vscode.commands.executeCommand('workbench.view.extension.dictionary').then(() => {
+      vscode.commands.executeCommand('workbench.view.extension.theBookening').then(() => {
         provider.notifyWebviewOfWordLookup(word);
         provider.lookupWord(word);
       });
@@ -38,7 +38,7 @@ export function deactivate() {}
 
 class DictionaryViewProvider implements vscode.WebviewViewProvider {
 
-  public static readonly viewType = 'dictionary.dictionaryView';
+  public static readonly viewType = 'theBookening.dictionaryView';
   
   private _view?: vscode.WebviewView;
   private _pythonPath: string | null = null;
