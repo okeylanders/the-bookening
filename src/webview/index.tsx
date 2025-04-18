@@ -2,6 +2,8 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+const debugging = false;
+
 declare const acquireVsCodeApi: () => {
   postMessage: (message: any) => void;
   getState: () => any;
@@ -52,18 +54,18 @@ const App: React.FC = () => {
   // Effect to save state whenever relevant variables change
   useEffect(() => {
     try {
-      console.log('Saving state:', { word, results, error });
+      debugging && console.log('Saving state to VS Code:', { word, results, error });
       vscode.setState({ word, results, error });
       // Note: We generally don't save 'loading' state
     } catch (e) {
-      console.error('Failed to set state in VS Code', e);
+      debugging && console.error('Failed to set state in VS Code', e);
     }
   }, [word, results, error]); // Dependency array ensures this runs when state changes
 
   // Effect to handle messages from the extension
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      console.log('Webview received message:', event.data);
+      debugging && console.log('Webview received message:', event.data);
       const msg = event.data;
       setLoading(false); // Always stop loading when a response arrives
       if (msg.type === 'results') {
@@ -86,7 +88,7 @@ const App: React.FC = () => {
     if (!trimmedWord) {
       return;
     }
-    console.log('Webview sending lookup message:', trimmedWord);
+    debugging && console.log('Webview sending lookup message:', trimmedWord);
     setLoading(true);
     // Clear previous results/error immediately for better UX
     setResults(null);
@@ -95,18 +97,18 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="p-4 font-sans">
-      <form onSubmit={onSubmit} className="flex text-black">
+    <div className="p-0 font-sans">
+      <form onSubmit={onSubmit} className="flex text-black p-0 w-full">
         <input
           type="text"
           value={word}
           onChange={(e) => setWord(e.target.value)} // Directly update state
           placeholder="Enter a word..."
-          className="flex-grow p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="flex-grow p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         <button
           type="submit"
-          className="px-4 bg-indigo-600 text-white rounded-r hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="px-4 bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           {loading ? 'Searching...' : 'Search'}
         </button>
@@ -119,7 +121,7 @@ const App: React.FC = () => {
       )}
 
       {results && (
-        <div className="mt-6 space-y-6 text-white">
+        <div className="p-4 mt-6 space-y-6 text-white">
           <Section title="Definitions" items={results.definitions} />
           <Section title="Synonyms" items={results.synonyms} />
           <Section title="Antonyms" items={results.antonyms} />
