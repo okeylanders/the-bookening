@@ -2,7 +2,7 @@
   "name": "dictionary",
   "displayName": "Dictionary",
   "description": "Lookup definitions, synonyms, antonyms, and example sentences via NLTK WordNet",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -14,7 +14,9 @@
     "Other"
   ],
   "main": "./dist/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:dictionary.dictionaryView"
+  ],
   "contributes": {
     "commands": [
       {

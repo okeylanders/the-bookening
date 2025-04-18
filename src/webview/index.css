@@ -6,8 +6,64 @@
 /* Custom styles */
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: var(--vscode-editor-foreground); /* Use VS Code theme variable for text color */
+  font-family: var(--vscode-editor-font-family), var(--vscode-font-family), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--vscode-editor-foreground);
 }
 
+input {
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 5px;
+}
+
+.primary-button {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 1px solid var(--vscode-button-border);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+button:focus {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 2px solid var(--vscode-button-border);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+}
+
+.error-button {
+  background-color: var(--vscode-button-background); 
+  color: var(--vscode-errorForeground);
+}
+
+.error-message {
+ color: var(--vscode-errorForeground);
+}
+
+.error-panel {
+  color: var(--vscode-errorForeground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground));
+  background-color: var(--vscode-inputValidation-errorBackground, transparent);
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.success-panel {
+  /* color: var(--vscode-inputValidation-infoForeground, #107c10);  */
+  border: 1px solid var(--vscode-inputValidation-infoBorder, #107c10); 
+  background-color: var(--vscode-inputValidation-infoBackground, #dff6dd); 
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 5px;
+}

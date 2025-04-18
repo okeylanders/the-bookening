@@ -2,7 +2,7 @@ import React, { useState, useEffect, FormEvent, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const debugging = false;
+const debugging = true;
 
 declare const acquireVsCodeApi: () => {
   postMessage: (message: any) => void;
@@ -26,59 +26,90 @@ interface Results {
   examples: string[];
 }
 
+type ErrorType = 'python_missing' | 'missing_dependencies' | 'script_error' | 'parse_error' | 'no_results' | 'communication_error' | 'install_error' | null;
+
+interface AppState {
+  word: string;
+  results: Results | null;
+  loading: boolean;
+  error: string | null;
+  errorType: ErrorType;
+  installStatus: 'idle' | 'installing' | 'success' | 'error';
+  installMessage: string | null;
+}
+
 const App: React.FC = () => {
-  const [word, setWord] = useState(() => {
+  const [state, setState] = useState<AppState>(() => {
     try {
-      return vscode.getState()?.word || '';
+      const savedState = vscode.getState();
+      return {
+        word: savedState?.word || '',
+        results: savedState?.results || null,
+        loading: false, // Don't persist loading state
+        error: savedState?.error || null,
+        errorType: savedState?.errorType || null,
+        installStatus: 'idle', // Don't persist install status
+        installMessage: null,
+      };
     } catch {
-      return '';
-    }
-  });
-  const [results, setResults] = useState<Results | null>(() => {
-    try {
-      return vscode.getState()?.results || null;
-    } catch {
-      return null;
-    }
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(() => {
-    try {
-      return vscode.getState()?.error || null;
-    } catch {
-      return null;
+      return {
+        word: '',
+        results: null,
+        loading: false,
+        error: null,
+        errorType: null,
+        installStatus: 'idle',
+        installMessage: null,
+      };
     }
   });
 
+  const { word, results, loading, error, errorType, installStatus, installMessage } = state;
+
+  // Effect to save state (excluding transient states like loading/install)
   useEffect(() => {
     try {
-      debugging && console.log('Saving state to VS Code:', { word, results, error });
-      vscode.setState({ word, results, error });
+      const stateToSave = { word, results, error, errorType };
+      debugging && console.log('Saving state to VS Code:', stateToSave);
+      vscode.setState(stateToSave);
     } catch (e) {
       debugging && console.error('Failed to set state in VS Code', e);
     }
-  }, [word, results, error]);
+  }, [word, results, error, errorType]);
 
+  // Effect to handle messages from the extension
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       debugging && console.log('Webview received message:', event.data);
       const msg = event.data;
-      setLoading(false);
-      if (msg.type === 'results') {
-        setResults(msg.data);
-        setError(null);
-      }
-      else if (msg.type === 'error') {
-        setError(msg.error);
-        setResults(null);
-      }
-      else if (msg.type === 'word') {
-        setLoading(true);
-        setResults(null);
-        setWord(msg.word);
-      }
+
+      setState(prevState => {
+        switch (msg.type) {
+          case 'results':
+            return { ...prevState, loading: false, results: msg.data, error: null, errorType: null, installStatus: 'idle' };
+          case 'error':
+            const specificErrorType = msg.error_type || 'script_error'; 
+            return { ...prevState, loading: false, results: null, error: msg.message || msg.error, errorType: specificErrorType, installStatus: 'idle' };
+          case 'word':
+            // Only set loading if it's a new word lookup, not just state restoration
+            return { ...prevState, loading: true, results: null, error: null, errorType: null, word: msg.word, installStatus: 'idle' };
+          case 'install_status':
+            return { ...prevState, loading: false, installStatus: msg.status, installMessage: msg.message, error: msg.status === 'error' ? msg.message : null, errorType: msg.status === 'error' ? 'install_error' : prevState.errorType };
+          default:
+            return prevState;
+        }
+      });
     };
     window.addEventListener('message', handleMessage);
+
+    // Request python check on initial load
+    try {
+      vscode.postMessage({ type: 'check_python' });
+    } catch (e) {
+      debugging && console.error('Failed to post check_python message', e);
+      setState(prev => ({ ...prev, error: 'Failed to communicate with extension on startup.', errorType: 'communication_error' }));
+    }
+
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
@@ -88,16 +119,13 @@ const App: React.FC = () => {
       return;
     }
     debugging && console.log('Webview sending lookup message:', trimmedWord);
-    setLoading(true);
-    setResults(null);
-    setError(null);
-    setWord(trimmedWord);
+
+    setState(prev => ({ ...prev, loading: true, results: null, error: null, errorType: null, word: trimmedWord, installStatus: 'idle', installMessage: null }));
     try {
       vscode.postMessage({ type: 'lookup', word: trimmedWord });
     } catch (e) {
       debugging && console.error('Failed to post message to VS Code', e);
-      setError('Failed to communicate with the extension.');
-      setLoading(false);
+      setState(prev => ({ ...prev, error: 'Failed to communicate with the extension.', errorType: 'communication_error', loading: false }));
     }
   }, []);
 
@@ -110,45 +138,89 @@ const App: React.FC = () => {
     performLookup(clickedWord);
   };
 
+  const handleInstallDeps = () => {
+    setState(prev => ({ ...prev, installStatus: 'installing', installMessage: 'Initiating installation...' }));
+    try {
+      vscode.postMessage({ type: 'install_dependencies' });
+    } catch (e) {
+      debugging && console.error('Failed to post install_dependencies message', e);
+      setState(prev => ({ ...prev, installStatus: 'error', installMessage: 'Failed to send install request to extension.', errorType: 'communication_error' }));
+    }
+  };
+
+
+  const renderStatusMessage = () => {
+    if (installStatus === 'installing') {
+      return <div className="success-panel w-full"><p>{installMessage || 'Installing...'}</p></div>;
+    }
+
+    if (installStatus === 'success') {
+      return <div className="success-panel w-full"><p>{installMessage || 'Success!'}</p></div>;
+    }
+
+    // Handle error states (installStatus is 'idle' or 'error' here)
+    if (errorType === 'python_missing') {
+      return <div className="error-panel w-full"><p>Error: {error}</p></div>;
+    }
+
+    if (errorType === 'missing_dependencies' || errorType === 'install_error') {
+      return (
+        <div className="p-0 space-y-2">
+          <div 
+            className='error-panel'
+          >
+            <p>Error: {error}</p>
+          </div>
+          <button
+            onClick={handleInstallDeps}
+            className="primary-button w-full text-center"
+          >
+            {'Install Dependencies'}
+          </button>
+        </div>
+      );
+    }
+
+    if (error) { // Catches script_error, parse_error, no_results, communication_error, etc.
+      return <div className="error-panel w-full"><p>Error: {error}</p></div>;
+    }
+
+    return null;
+  };
+
   return (
-    // Use flex column layout for the whole app, make it fill the viewport height
     <div className="p-0 font-sans flex flex-col h-screen">
-      {/* Search form remains at the top */}
-      <form onSubmit={onSubmit} className="flex text-black p-0 w-full flex-shrink-0">
+      <form onSubmit={onSubmit} className="flex p-0 w-full flex-shrink-0 mb-2">
         <input
           type="text"
           value={word}
-          onChange={(e) => setWord(e.target.value)}
+          onChange={(e) => setState(prev => ({ ...prev, word: e.target.value }))}
           placeholder="Enter a word..."
-          className="flex-grow p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="flex-grow"
+          disabled={installStatus === 'installing'}
         />
         <button
           type="submit"
-          className="px-4 bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="primary-button disabled:opacity-50"
+          disabled={loading || installStatus === 'installing'}
         >
           {loading ? 'Searching...' : 'Search'}
         </button>
       </form>
 
-      {/* Container for content below the search bar, takes remaining space */}
-      <div className="flex-grow relative overflow-y-auto"> {/* Added relative positioning and overflow */}
-        {/* Loading indicator: positioned absolutely to cover this container */}
+      <hr className='mb-4'/>
+
+      <div className="flex-grow relative overflow-y-auto pb-8">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-10" style={{ backgroundColor: 'var(--vscode-editor-background)' }}> {/* Use theme background */}
-            <p style={{ color: 'var(--vscode-editor-foreground)' }}>Loading...</p> {/* Use theme foreground */}
+          <div className="absolute inset-0 flex items-center justify-center z-10" style={{ backgroundColor: 'var(--vscode-editor-background)' }}>
+            <p style={{ color: 'var(--vscode-editor-foreground)' }}>Loading...</p>
           </div>
         )}
 
-        {/* Error display */}
-        {error && (
-          <div className="p-4 text-red-600"> {/* Added padding */}
-            Error: {error}
-          </div>
-        )}
+        {renderStatusMessage()}
 
-        {/* Results display: Only rendered when not loading and results exist */}
-        {!loading && results && (
-          <div className="p-4 space-y-6"> {/* Removed mt-6, padding handled by parent */}
+        {!loading && !errorType && results && (
+          <div className="p-0 space-y-6">
             <Section title="Definitions" items={results.definitions} />
             <Section title="Synonyms" items={results.synonyms} onWordClick={handleWordClick} />
             <Section title="Antonyms" items={results.antonyms} onWordClick={handleWordClick} />

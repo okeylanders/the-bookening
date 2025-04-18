@@ -27,8 +27,14 @@ module.exports = [
       libraryTarget: 'commonjs2'
     },
     plugins: [
-      new CopyPlugin({ patterns: [ { from: 'scripts', to: 'scripts' } ] })
-    ]
+      new CopyPlugin({ 
+        patterns: [ 
+          { from: 'scripts', to: 'scripts' },
+          { from: 'pkg', to: 'pkg' }
+        ]
+      })
+    ], 
+    devtool: 'source-map'
   },
   {
     name: 'webview',
@@ -53,6 +59,7 @@ module.exports = [
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'webview.js'
-    }
+    }, 
+    devtool: 'source-map'
   }
 ];

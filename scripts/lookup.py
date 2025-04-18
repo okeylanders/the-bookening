@@ -2,23 +2,18 @@
 import argparse
 import json
 import sys
-import nltk
 import os
 import subprocess
 import difflib
-from nltk.corpus import wordnet as wn
-from nltk import data
-
-# try import tabulate, else install requirements.txt and retry
+# Attempt imports and check for errors
 try:
+    import nltk
+    from nltk.corpus import wordnet as wn
+    from nltk import data
     from tabulate import tabulate
 except ImportError:
-    # install into the same Python where this script is running
-    req = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-    subprocess.run([
-        sys.executable, '-m', 'pip', 'install', '-r', req
-    ], check=True, stdout=sys.stderr, stderr=sys.stderr)
-    os.execv(sys.executable, [sys.executable] + sys.argv)
+    print(json.dumps({"error": "missing_dependencies", "message": "Required Python packages (nltk, tabulate) are missing."}))
+    sys.exit(1)
 
 def ensure_wordnet():
     try:
@@ -63,9 +58,9 @@ def main():
 
     result = {
         "definitions": definitions,
-        "synonyms": sorted(synonyms),
-        "antonyms": sorted(antonyms),
-        "hyponyms": sorted(hyponyms),
+        "synonyms": sorted(list(synonyms)), # Convert sets to lists before sorting
+        "antonyms": sorted(list(antonyms)), # Convert sets to lists before sorting
+        "hyponyms": sorted(list(hyponyms)), # Convert sets to lists before sorting
         "examples": examples
     }
 
