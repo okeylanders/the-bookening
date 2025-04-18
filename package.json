@@ -11,6 +11,8 @@
     "url": "https://github.com/okeylanders/the-bookening/issues"
   },
   "homepage": "https://github.com/okeylanders/the-bookening#readme",
+  "license": "MIT",
+  "publisher": "OkeyLanders",
   "engines": {
     "vscode": "^1.74.0"
   },
