@@ -8,12 +8,6 @@ body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--vscode-editor-foreground); /* Use VS Code theme variable for text color */
 }
 
-/* Dark and light mode font colors */
-@media (prefers-color-scheme: dark) {
-  body { color: white; }
-}
-@media (prefers-color-scheme: light) {
-  body { color: black; }
-}

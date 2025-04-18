@@ -121,7 +121,7 @@ const App: React.FC = () => {
       )}
 
       {results && (
-        <div className="p-4 mt-6 space-y-6 text-white">
+        <div className="p-4 mt-6 space-y-6">
           <Section title="Definitions" items={results.definitions} />
           <Section title="Synonyms" items={results.synonyms} />
           <Section title="Antonyms" items={results.antonyms} />
