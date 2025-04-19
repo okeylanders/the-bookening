@@ -24,6 +24,15 @@ interface Results {
   antonyms: string[];
   hyponyms: string[];
   examples: string[];
+  // Additional WordNet info
+  pos_tags: string[];
+  hypernyms: string[];
+  holonyms: string[];
+  meronyms: string[];
+  derivationally_related_forms: string[];
+  similar_tos: string[];
+  pertainyms: string[];
+  verb_frames: string[];
 }
 
 type ErrorType = 'python_missing' | 'missing_dependencies' | 'script_error' | 'parse_error' | 'no_results' | 'communication_error' | 'install_error' | null;
@@ -222,9 +231,17 @@ const App: React.FC = () => {
         {!loading && !errorType && results && (
           <div className="p-0 space-y-6">
             <Section title="Definitions" items={results.definitions} />
+            <Section title="Part of Speech" items={results.pos_tags} />
             <Section title="Synonyms" items={results.synonyms} onWordClick={handleWordClick} />
             <Section title="Antonyms" items={results.antonyms} onWordClick={handleWordClick} />
             <Section title="Hyponyms" items={results.hyponyms} onWordClick={handleWordClick} />
+            <Section title="Hypernyms" items={results.hypernyms} onWordClick={handleWordClick} />
+            <Section title="Holonyms" items={results.holonyms} onWordClick={handleWordClick} />
+            <Section title="Meronyms" items={results.meronyms} onWordClick={handleWordClick} />
+            <Section title="Derivationally Related Forms" items={results.derivationally_related_forms} onWordClick={handleWordClick} />
+            <Section title="Similar To" items={results.similar_tos} onWordClick={handleWordClick} />
+            <Section title="Pertainyms" items={results.pertainyms} onWordClick={handleWordClick} />
+            <Section title="Verb Frames" items={results.verb_frames} />
             <Section title="Examples" items={results.examples} />
           </div>
         )}
@@ -244,7 +261,7 @@ const Section: React.FC<SectionProps> = ({ title, items, onWordClick }) => {
     return null;
   }
 
-  const isMultiColumn = ['Synonyms', 'Antonyms', 'Hyponyms'].includes(title);
+  const isMultiColumn = ['Synonyms', 'Antonyms', 'Hyponyms','Hypernyms','Holonyms','Meronyms','Similar To','Pertainyms','Derivationally Related Forms'].includes(title);
   const allowWordClick = isMultiColumn && onWordClick;
 
   return (
